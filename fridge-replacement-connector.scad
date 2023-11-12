@@ -29,9 +29,9 @@ ppLength = 24.6;
 retentionPinDiameter = 2.5;
 retentionPinPosition = 10;
 
-clipHeight = 0.7;
-clipWidth = 3.4;
-clipLength = 12.2;
+tongueHeight = 0.7;
+tongueWidth = 3.4;
+tongueLength = 12.2;
 
 // ----
 
@@ -94,9 +94,9 @@ module pp45(){
             cylinder(h=ppSize+intersectMargin,d=retentionPinDiameter);
     }
     
-    module clip(){
-        translate([-clipWidth/2,ppSize/2-intersectMargin, ppLength-clipLength])
-            cube([clipWidth, clipHeight, clipLength]);
+    module tongue(){
+        translate([-tongueWidth/2,ppSize/2-intersectMargin, ppLength-tongueLength])
+            cube([tongueWidth, tongueHeight, tongueLength]);
     }
 
     difference(){
@@ -105,7 +105,7 @@ module pp45(){
                 cube([ppSize, ppSize, ppLength]);
             
             for(i = [0:90:270]){
-                rotate([0,0,i]) clip();
+                rotate([0,0,i]) tongue();
             }
         };
         translate([ppSize/2,0,retentionPinPosition])
@@ -127,14 +127,16 @@ module part(){
 
             translate([0,0,coverPlateThickness])
             {
-                linear_extrude(21){
+                linear_extrude(21){ // connector housing
                     holeShape();
                 };
             }
         };
+        //remove some unnecessary material from connector housing to save filament/print time
         translate([-20,8,5]) cube([40,20,50]);
         translate([-20,-27.9,5]) cube([40,20,50]);
         
+        // add hole for pp45 connector with some extra room so the connector can be fitted well
         minkowski(){
             translate([-7.9/2, 0, -intersectMargin]){
                 pp45();
@@ -145,7 +147,7 @@ module part(){
     }
 }
 
-module splitShape(){
+module splitShape(){ // the shape by which the two parts of the model are split so it can be snapped together around the connector
     translate([-15,0,2]) cube([30,25,40]);
     module key(){
         translate([10.5, -4,2]) linear_extrude(40){
@@ -157,20 +159,20 @@ module splitShape(){
 }
 
 
-//part();
-
-//color("red")
-//splitShape();
-
-difference(){
+if ($preview) {
     part();
-    splitShape();
-};
-
-translate([27, 0, -2]){
-    intersection(){
+    color("red", 0.2)
+        splitShape();
+}else{
+    difference(){
         part();
         splitShape();
     };
-}
 
+    translate([27, 0, -2]){
+        intersection(){
+            part();
+            splitShape();
+        };
+    }
+}
